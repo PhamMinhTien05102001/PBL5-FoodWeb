@@ -10,7 +10,8 @@ import { signinSchema } from './../validation/index';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { authAPI } from '../../../api/repositoryFactory';
 import { useEffect, useState } from 'react';
-import { storeToken } from '../utils/authStorage';
+import { useNavigate } from 'react-router-dom';
+import clientStorage from '../../../utils/clientStorage';
 
 const FormSignIn = () => {
   const {
@@ -22,13 +23,18 @@ const FormSignIn = () => {
     resolver: yupResolver(signinSchema)
   });
   const [signinErr, setSigninErr] = useState<string>('');
+  const navigate = useNavigate();
   const loginHandler: SubmitHandler<signinInput> = async (
     data: signinInput
   ): Promise<void> => {
     try {
+      console.log(data);
       const res = await authAPI.signin(data);
-      storeToken(res.data?.token);
+      console.log(res);
+      clientStorage.getClientStorage().setToken(res.data.token);
+      navigate('/', { replace: true });
     } catch (err: any) {
+      console.log(err.response.data);
       setSigninErr(err.response.data);
     }
   };

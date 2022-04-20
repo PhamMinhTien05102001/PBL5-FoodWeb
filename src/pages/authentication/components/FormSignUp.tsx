@@ -1,4 +1,10 @@
-import { FormControl, Flex, FormErrorMessage, Text } from '@chakra-ui/react';
+import {
+  FormControl,
+  Flex,
+  FormErrorMessage,
+  Text,
+  useToast
+} from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import ButtonCustom from '../../../components/Button/ButtonCustom';
 import FormInput from '../../../components/Form/FormInput';
@@ -12,9 +18,10 @@ import {
 import { signupSchema } from './../validation/index';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { authAPI } from '../../../api/repositoryFactory';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { storeToken } from '../utils/authStorage';
+import { useNavigate } from 'react-router-dom';
+import clientStorage from '../../../utils/clientStorage';
 
 const FormSignUp = () => {
   const {
@@ -25,14 +32,27 @@ const FormSignUp = () => {
   } = useForm<signupInput | signinInput>({
     resolver: yupResolver(signupSchema)
   });
+  const toast = useToast();
+  const navigate = useNavigate();
   const [signupErr, setSignupErr] = useState<string>('');
+  const [roleValue, setRoleValue] = useState<string>();
   const signupHandler: SubmitHandler<signupInput | signinInput> = async (
     data: signupInput | signinInput
   ): Promise<void> => {
     try {
       const submitData = data as signupInput;
       const res = await authAPI.signup(submitData);
-      storeToken(res.data.token);
+      clientStorage.getClientStorage().setToken(res.data.token);
+      toast({
+        status: 'success',
+        title: 'Đăng kí tài khoản thành công',
+        position: 'bottom-right',
+        duration: 1500,
+        variant: 'subtle'
+      });
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 2000);
     } catch (err: any) {
       setSignupErr(err.response.data);
     }
@@ -66,7 +86,9 @@ const FormSignUp = () => {
             errorMessage={'email' in errors ? errors.email?.message : ''}
           />
           <FormInput
-            textLabel={'Tài khoản'}
+            textLabel={
+              roleValue == 'Seller' ? 'Tên cửa hàng' : 'Tên người dùng'
+            }
             placeholder={'abc123'}
             register={register}
             nameRegister={'nameUser'}
@@ -105,7 +127,16 @@ const FormSignUp = () => {
             'passwordConfirm' in errors ? errors.passwordConfirm?.message : ''
           }
         />
-        <FormSelect register={register} nameRegister={'nameGroup'} />
+        <FormSelect
+          register={register}
+          nameRegister={'nameGroup'}
+          value={roleValue}
+          onChange={(e: React.SyntheticEvent<HTMLSelectElement>) => {
+            if ('value' in e.target) {
+              setRoleValue(e.currentTarget.value);
+            }
+          }}
+        />
         <FormErrorMessage mb={'1rem'}>
           <Text textAlign={'center'} width={'100%'}>
             {signupErr}

@@ -1,12 +1,12 @@
+import { DynamicObject } from '../../models/DynamicObject.model';
 import axiosClient from '../repository';
-import { signinInput, signupInput } from './../../models/Authentication.model';
-const path = 'Accounts';
+const path = 'Users';
 
 export default {
-  signin(signinData: signinInput) {
-    return axiosClient.post(`${path}/login`, signinData);
+  getUserProfile() {
+    return axiosClient.get(`${path}/GetProfileUser`);
   },
-  signup(signupData: signupInput) {
-    return axiosClient.post(`${path}/register`, signupData);
+  updateUserProfile(data: DynamicObject) {
+    return axiosClient.patch(`${path}/EditProfile`, data);
   }
 };

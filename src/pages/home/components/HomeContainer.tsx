@@ -1,8 +1,13 @@
-import React from 'react';
-import Footer from '../../../components/Footer/Footer';
-
+import { Box } from '@chakra-ui/react';
+import Carousel from '../../../components/Hero/Carousel';
+import Navigation from './../../../components/Navigation/Navigation';
 const HomeContainer = () => {
-  return <Footer />;
+  return (
+    <Box>
+      <Navigation />
+      <Carousel />
+    </Box>
+  );
 };
 
 export default HomeContainer;
